@@ -1,0 +1,468 @@
+<title>Ieroču atļaujas trenažieris</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: šautuves stends — kreisajā pusē jautājumu lapa, labajā papīra mērķis, kurā katra atbilde ir trāpījums */
+:root {
+  --bg: #e9ece6;          /* gaiši pelēkzaļš, kā šautuves siena */
+  --paper: #f7f8f4;
+  --ink: #1d2320;
+  --muted: #5d6862;
+  --line: #c9cfc7;
+  --accent: #d9530f;      /* drošības oranžs */
+  --accent-ink: #ffffff;
+  --ok: #2f7d4f;
+  --ok-bg: #e2f0e7;
+  --bad: #b3261e;
+  --bad-bg: #f8e3e1;
+  --warn-bg: #fbf0d9;
+  --warn-ink: #7a5300;
+  --ring: #1d2320;
+  --ring-fill: #f7f8f4;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816; --paper: #1d2220; --ink: #e7ebe6; --muted: #9aa59e; --line: #34403a;
+    --accent: #f07a3a; --accent-ink: #1a0d05; --ok: #6cc690; --ok-bg: #1d3327; --bad: #f08b84; --bad-bg: #3a1f1d;
+    --warn-bg: #3a2f15; --warn-ink: #f0cd7a; --ring: #cfd6d0; --ring-fill: #1d2220; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816; --paper: #1d2220; --ink: #e7ebe6; --muted: #9aa59e; --line: #34403a;
+  --accent: #f07a3a; --accent-ink: #1a0d05; --ok: #6cc690; --ok-bg: #1d3327; --bad: #f08b84; --bad-bg: #3a1f1d;
+  --warn-bg: #3a2f15; --warn-ink: #f0cd7a; --ring: #cfd6d0; --ring-fill: #1d2220; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1; font-weight: 700; text-transform: uppercase; }
+h2 { font-size: 1.6rem; font-weight: 600; text-transform: uppercase; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+button:focus-visible, .opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.label { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+header.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; border-bottom: 3px solid var(--ink); padding-bottom: 14px; }
+header.top .sub { color: var(--muted); max-width: 52ch; margin-top: 8px; }
+.lane { font-family: var(--font-display); font-size: 1rem; font-weight: 600; border: 2px solid var(--ink); padding: 4px 10px; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+
+.notice { background: var(--warn-bg); color: var(--warn-ink); padding: 12px 14px; border-radius: 4px; font-size: .9rem; }
+.notice b { font-weight: 600; }
+
+/* Home */
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.mode { text-align: left; background: var(--paper); border: 2px solid var(--line); border-radius: 6px; padding: 18px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s, transform .15s; }
+.mode:hover { border-color: var(--ink); transform: translateY(-2px); }
+.mode.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.mode.primary .label { color: var(--paper); opacity: .7; }
+.mode p { font-size: .92rem; color: inherit; opacity: .85; }
+.mode:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+.topic { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; cursor: pointer; text-align: left; }
+.topic:hover { border-color: var(--ink); }
+.topic .name { font-weight: 600; }
+.topic .count { font-family: var(--font-mono); font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { grid-column: 1 / -1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--ok); width: 0; transition: width .4s; }
+
+/* Quiz */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+@media (max-width: 820px) { .stage { grid-template-columns: minmax(0, 1fr); } .side { order: -1; } }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.qmeta { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.progress > i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+.scene { border-left: 4px solid var(--accent); padding: 4px 0 4px 14px; color: var(--muted); font-style: italic; }
+.qtext { font-size: 1.2rem; font-weight: 500; line-height: 1.4; }
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; text-align: left; background: var(--bg); border: 2px solid transparent; border-radius: 6px; padding: 12px 14px; cursor: pointer; transition: border-color .12s, background .12s; }
+.opt:hover:not(:disabled) { border-color: var(--ink); }
+.opt .k { font-family: var(--font-mono); font-size: .85rem; width: 26px; height: 26px; display: grid; place-items: center; border: 1.5px solid var(--muted); border-radius: 50%; color: var(--muted); }
+.opt:disabled { cursor: default; }
+.opt.correct { background: var(--ok-bg); border-color: var(--ok); }
+.opt.correct .k { background: var(--ok); color: var(--paper); border-color: var(--ok); }
+.opt.wrong { background: var(--bad-bg); border-color: var(--bad); }
+.opt.wrong .k { background: var(--bad); color: var(--paper); border-color: var(--bad); }
+.opt.picked { border-color: var(--ink); }
+.feedback { border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.feedback.ok { background: var(--ok-bg); }
+.feedback.bad { background: var(--bad-bg); }
+.feedback .verdict { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; text-transform: uppercase; }
+.feedback.ok .verdict { color: var(--ok); }
+.feedback.bad .verdict { color: var(--bad); }
+.src { font-size: .82rem; color: var(--muted); }
+.verify { display: inline-block; font-size: .78rem; background: var(--warn-bg); color: var(--warn-ink); padding: 2px 8px; border-radius: 3px; margin-top: 4px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 4px; padding: 11px 20px; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+.btn.ghost:hover { border-color: var(--ink); }
+.hint { font-size: .8rem; color: var(--muted); }
+
+.side { display: flex; flex-direction: column; gap: 12px; }
+.targetbox { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.targetbox svg { width: 100%; max-width: 260px; height: auto; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.stat { text-align: center; }
+.stat b { display: block; font-family: var(--font-display); font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.timer { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Results */
+.result-head { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 24px; align-items: center; }
+@media (max-width: 700px) { .result-head { grid-template-columns: minmax(0, 1fr); } }
+.big { font-family: var(--font-display); font-size: clamp(3rem, 10vw, 5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.stamp { display: inline-block; font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; text-transform: uppercase; letter-spacing: .08em; border: 3px solid currentColor; padding: 2px 12px; transform: rotate(-3deg); }
+.stamp.pass { color: var(--ok); }
+.stamp.fail { color: var(--bad); }
+.review { display: flex; flex-direction: column; gap: 10px; }
+.rev { background: var(--bg); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.rev .q { font-weight: 600; }
+.rev .a { font-size: .92rem; }
+.rev .a.yours { color: var(--bad); }
+.rev .a.right { color: var(--ok); }
+.rev .e { font-size: .88rem; color: var(--muted); }
+
+footer { font-size: .82rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+footer a { color: inherit; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@keyframes pop { from { r: 0; } }
+.hit { animation: pop .25s ease-out; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="label">Teorijas sagatavošana · Latvija</div>
+      <h1>Ieroču atļaujas trenažieris</h1>
+      <p class="sub">Treniņjautājumi, situāciju uzdevumi un eksāmena simulācija ieroču aprites kvalifikācijas pārbaudījumam. Katra pareiza atbilde ir trāpījums desmitniekā.</p>
+    </div>
+    <div class="lane" id="laneTag">Celiņš 1</div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer>
+    <p><b>Svarīgi:</b> šie ir treniņjautājumi, nevis oficiālā Valsts policijas jautājumu banka. Likuma normas pirms eksāmena salīdzini ar aktuālo redakciju: <a href="https://likumi.lv/ta/id/305818-ierocu-aprites-likums" target="_blank" rel="noopener">Ieroču aprites likums</a> un <a href="https://likumi.lv/ta/id/88966-kriminallikums" target="_blank" rel="noopener">Krimināllikums</a>. 2026. gada 24. septembrī pieņemti grozījumi Ieroču aprites likumā.</p>
+    <p>Jautājumi ar zīmi „pārbaudi likumā” satur konkrētus skaitļus vai normas, kas var būt mainījušās.</p>
+  </footer>
+</div>
+
+<script>
+const TOPICS = {
+  drosiba:  { name: "Drošas rīcības pamatnoteikumi", short: "Drošība" },
+  jedzieni: { name: "Jēdzieni, uzbūve un munīcija", short: "Jēdzieni" },
+  atlaujas: { name: "Kategorijas un atļaujas", short: "Atļaujas" },
+  aprite:   { name: "Nēsāšana, glabāšana, pārvadāšana", short: "Aprite" },
+  aizsardz: { name: "Pašaizsardzība un Krimināllikums", short: "Pašaizsardzība" },
+  palidziba:{ name: "Pirmā palīdzība", short: "Pirmā palīdzība" },
+  situacijas:{ name: "Situāciju uzdevumi", short: "Situācijas" }
+};
+
+// a = pareizās atbildes indekss; v = true, ja konkrēts skaitlis/norma jāpārbauda aktuālajā likumā
+const Q = [
+  // DROŠĪBA
+  { t:"drosiba", q:"Kā jāuztver jebkurš ierocis, ko paņem rokās?", o:["Kā pielādēts, līdz pats esi pārliecinājies par pretējo","Kā nepielādēts, ja ieslēgts drošinātājs","Kā pielādēts tikai tad, ja ievietota magazīna","Kā nepielādēts, ja īpašnieks tā apgalvo"], a:0, e:"Pirmais drošības likums: katrs ierocis ir pielādēts, kamēr pats to neesi pārbaudījis. Arī pēc pārbaudes ar to rīkojas tā, it kā tas būtu pielādēts.", s:"Vispārējie drošas rīcības noteikumi" },
+  { t:"drosiba", q:"Kur jāatrodas rādītājpirkstam, kamēr neesi pieņēmis lēmumu šaut un tēmēklis nav uz mērķa?", o:["Uz mēlītes, lai varētu ātri reaģēt","Taisni gar rāmi vai stobra kārbu, ārpus mēlītes loka","Mēlītes loka iekšpusē, nepieskaroties mēlītei","Uz drošinātāja"], a:1, e:"Pirksts atrodas ārpus mēlītes loka, taisni gar rāmi. Uz mēlītes to liek tikai tad, kad mērķis ir notēmēts un lēmums šaut pieņemts.", s:"Vispārējie drošas rīcības noteikumi" },
+  { t:"drosiba", q:"Uz ko drīkst vērst ieroča stobru?", o:["Uz jebko, ja ierocis ir izlādēts","Tikai drošā virzienā, uz to, ko esi gatavs iznīcināt","Uz grīdu jebkurā telpā","Uz cilvēku, ja drošinātājs ieslēgts"], a:1, e:"Stobrs vienmēr vērsts drošā virzienā. Nekad nevērs to uz to, ko negribi sabojāt vai savainot, arī ar izlādētu ieroci.", s:"Vispārējie drošas rīcības noteikumi" },
+  { t:"drosiba", q:"Par ko jāpārliecinās pirms šāviena, papildus pašam mērķim?", o:["Par laikapstākļiem","Par to, kas atrodas aiz mērķa un tā tuvumā","Par patronu skaitu magazīnā","Par to, vai ir līdzi ieroča atļauja"], a:1, e:"Lode var izlidot cauri mērķim, aiziet garām vai rikošetēt. Jāzina, kas atrodas aiz mērķa un ap to.", s:"Vispārējie drošas rīcības noteikumi" },
+  { t:"drosiba", q:"Ko nozīmē ieslēgts drošinātājs?", o:["Ierocis nevar izšaut nekādos apstākļos","Mehāniska ierīce, kas var atteikt; tā neaizstāj drošu rīcību","Ierocis ir izlādēts","Ieroci drīkst nodot citam bez pārbaudes"], a:1, e:"Drošinātājs ir mehānisms, un mehānismi var sabojāties. Stobra virziens un pirksts ārpus mēlītes loka paliek obligāti.", s:"Vispārējie drošas rīcības noteikumi" },
+  { t:"drosiba", q:"Nospied mēlīti, atskan klikšķis, bet šāviens nenotiek. Kā rīkoties?", o:["Uzreiz atvērt aizslēgu un apskatīt patronu","Turēt stobru drošā virzienā un nogaidīt vismaz 30 sekundes, tad izlādēt","Ieskatīties stobrā no priekšpuses","Nekavējoties šaut vēlreiz"], a:1, e:"Iespējams aizkavēts šāviens: kapsula var aizdegt lādiņu ar nokavēšanos. Tāpēc stobrs paliek drošā virzienā, nogaida vismaz 30 sekundes un tikai tad izlādē.", s:"Šaušanas drošības prakse" },
+  { t:"drosiba", q:"Šāviens izklausījās neparasti kluss un vājš, atsitiena gandrīz nebija. Pareizā rīcība?", o:["Turpināt šaut, ja ierocis pārlādējās","Pārtraukt šaušanu, izlādēt un pārbaudīt, vai stobrā nav iestrēgusi lode","Notīrīt tikai tēmēkli","Izšaut vēl vienu šāvienu, lai iztīrītu stobru"], a:1, e:"Vājš šāviens var nozīmēt, ka lode palikusi stobrā. Nākamais šāviens var saplēst stobru un savainot šāvēju.", s:"Šaušanas drošības prakse" },
+  { t:"drosiba", q:"Kādā secībā pārbauda, vai pašlādējoša pistole ir izlādēta?", o:["Atvelk aizslēgu, tad izņem magazīnu","Izņem magazīnu, tad atvelk aizslēgu un pārbauda patrontelpu vizuāli un ar tausti","Nospiež mēlīti drošā virzienā","Pietiek izņemt magazīnu"], a:1, e:"Vispirms izņem magazīnu, lai jauna patrona netiktu padota. Tad atver aizslēgu un pārliecinās, ka patrontelpa ir tukša.", s:"Rīcība ar ieroci" },
+  { t:"drosiba", q:"Kā pareizi nodot ieroci citai personai?", o:["Pielādētu, ar ieslēgtu drošinātāju","Izlādētu, ar atvērtu aizslēgu, ar stobru drošā virzienā","Ar stobru pret saņēmēju, lai viņš var paņemt aiz roktura","Iemestu somā"], a:1, e:"Ieroci nodod izlādētu un ar atvērtu aizslēgu, lai saņēmējs redz, ka tas ir tukšs. Saņēmējs to pārbauda pats.", s:"Rīcība ar ieroci" },
+  { t:"drosiba", q:"Kādu munīciju drīkst lietot konkrētajam ierocim?", o:["Jebkuru, kas ietilpst patrontelpā","Tikai tāda kalibra munīciju, kas norādīta uz ieroča vai ražotāja dokumentos","Jebkuru tā paša garuma patronu","Pašlādētu munīciju bez ierobežojumiem"], a:1, e:"Nepareiza kalibra patrona var izraisīt stobra plīsumu. Kalibrs parasti iegravēts uz stobra.", s:"Rīcība ar ieroci" },
+  { t:"drosiba", q:"Ko dara pirms ieroča tīrīšanas?", o:["Neko, ja drošinātājs ir ieslēgts","Izlādē ieroci, pārbauda patrontelpu un novieto munīciju citur","Izņem tikai magazīnu","Izšauj vienu šāvienu, lai pārbaudītu"], a:1, e:"Daudzi nelaimes gadījumi notiek tīrīšanas laikā. Munīcija nedrīkst atrasties uz tīrīšanas galda.", s:"Rīcība ar ieroci" },
+
+  // JĒDZIENI
+  { t:"jedzieni", q:"Ko likuma izpratnē nozīmē ieroča glabāšana?", o:["Ieroča turēšana atļautā vietā, ievērojot noteiktās drošības prasības","Ieroča atrašanās pie personas gatavībā lietošanai","Ieroča pārvietošana iepakotā veidā","Ieroča nodošana tirgotājam"], a:0, e:"Glabāšana ir ieroča atrašanās atļautā glabāšanas vietā (piem., mājās seifā), ievērojot drošības prasības.", s:"Ieroču aprites likums, 1. pants (jēdzieni)", v:true },
+  { t:"jedzieni", q:"Kas raksturo ieroča pārvadāšanu?", o:["Ierocis ir pielādēts un maksts pie jostas","Ierocis tiek pārvietots tā, ka to nav iespējams uzreiz izmantot: nepielādēts, iepakots, atsevišķi no munīcijas","Ierocis atrodas automašīnas cimdu nodalījumā ar magazīnu","Ierocis tiek nests rokās bez somas"], a:1, e:"Pārvadājot ierocis ir nepielādēts un iepakots (futrālī, somā), un munīcija atrodas atsevišķi. Tam nav vajadzīga nēsāšanas atļauja.", s:"Ieroču aprites likums, 1. pants (jēdzieni)", v:true },
+  { t:"jedzieni", q:"Kas raksturo ieroča nēsāšanu?", o:["Ierocis atrodas pie personas ārpus glabāšanas vietas gatavībā lietošanai","Ierocis atrodas seifā","Ierocis tiek pārsūtīts pa pastu","Ierocis atrodas izjauktā veidā futrālī"], a:0, e:"Nēsāšana nozīmē, ka ierocis ir pie tevis un gatavs lietošanai ārpus glabāšanas vietas. Tam vajag ieroča nēsāšanas atļauju.", s:"Ieroču aprites likums, 1. pants (jēdzieni)", v:true },
+  { t:"jedzieni", q:"Kas ir kalibrs?", o:["Stobra garums","Stobra kanāla iekšējais diametrs (un tam atbilstošās patronas apzīmējums)","Patronu skaits magazīnā","Lodes svars gramos"], a:1, e:"Kalibrs raksturo stobra kanāla diametru. Patronas apzīmējums (piem., 9×19 mm) nosaka, kāda munīcija der ierocim.", s:"Ieroču uzbūve" },
+  { t:"jedzieni", q:"No kā sastāv vienota šaujamieroča patrona?", o:["Lode un magazīna","Čaula, lode, šaujampulvera lādiņš un kapsula","Stobrs un lode","Kapsula un aizslēgs"], a:1, e:"Kapsula aizdedzina šaujampulveri, gāzes izgrūž lodi, čaula visu satur kopā.", s:"Munīcija" },
+  { t:"jedzieni", q:"Kas ir patrontelpa?", o:["Kaste munīcijas glabāšanai","Stobra aizmugurējā daļa, kurā pirms šāviena atrodas patrona","Magazīnas apakšdaļa","Seifa nodalījums"], a:1, e:"Patrontelpa ir stobra daļa, kurā ievieto patronu. Pārbaudot, vai ierocis izlādēts, skatās tieši patrontelpā.", s:"Ieroču uzbūve" },
+  { t:"jedzieni", q:"Kurš ierocis ES regulējumā skaitās īsstobra šaujamierocis?", o:["Ar stobru ne garāku par 30 cm vai kopgarumu ne lielāku par 60 cm","Jebkurš ierocis ar stobru līdz 50 cm","Tikai revolveri","Ierocis, kuru var nēsāt kabatā"], a:0, e:"Īsstobra šaujamierocim stobrs nav garāks par 30 cm vai kopējais garums nepārsniedz 60 cm. Pārējie ir garstobra.", s:"ES Šaujamieroču direktīva; Ieroču aprites likums", v:true },
+  { t:"jedzieni", q:"Kā sauc ieroci, kurš pēc šāviena pats izmet čaulu un padod nākamo patronu, bet katram šāvienam mēlīte jānospiež atkārtoti?", o:["Automātisks","Pusautomātisks (pašlādējošs)","Vienšāviena","Ar manuālu pārlādēšanu"], a:1, e:"Pusautomātiskais ierocis pārlādējas pats, bet izšauj vienu šāvienu ar katru mēlītes nospiedienu. Automātiskais šauj sērijām, kamēr mēlīte nospiesta.", s:"Ieroču uzbūve" },
+
+  // ATĻAUJAS
+  { t:"atlaujas", q:"Kas jānokārto pirms ieroča glabāšanas vai nēsāšanas atļaujas saņemšanas?", o:["Tikai jāsamaksā valsts nodeva","Kvalifikācijas pārbaudījums par ieroču aprites kārtību un prasmi rīkoties ar ieroci, un veselības pārbaude","Tikai šaušanas kursi pie privāta instruktora","Nekas, ja persona ir pilngadīga"], a:1, e:"Pretendents kārto kvalifikācijas pārbaudījumu (teorija un praktiskā rīcība) un iziet veselības pārbaudi ārstniecības iestādē.", s:"Ieroču aprites likums; MK noteikumi par kvalifikācijas pārbaudījumu" },
+  { t:"atlaujas", q:"Kura iestāde izsniedz ieroču atļaujas fiziskām personām?", o:["Pašvaldība","Valsts policija","Zemessardze","Valsts meža dienests"], a:1, e:"Ieroču atļaujas izsniedz Valsts policija. Valsts meža dienests nodarbojas ar medību tiesībām (mednieka apliecību), ne ieroču atļaujām.", s:"Ieroču aprites likums" },
+  { t:"atlaujas", q:"Kādiem ieročiem fiziskām personām izsniedz ieroča nēsāšanas atļauju?", o:["Jebkuram reģistrētam ierocim","B kategorijas īsstobra pašaizsardzības šaujamieročiem","Tikai medību bisēm","A kategorijas ieročiem"], a:1, e:"Nēsāšanas atļauja paredzēta B kategorijas īsstobra pašaizsardzības šaujamierocim. Medību un sporta ieročus parasti glabā un pārvadā, nevis nēsā.", s:"Ieroču aprites likums, 19. pants", v:true },
+  { t:"atlaujas", q:"Kas ir A kategorijas ieroči?", o:["Aizliegtie ieroči (piem., automātiskie), kas civilajā apritē parasti nav pieejami","Gāzes ieroči","Medību bises","Pneimatiskie ieroči"], a:0, e:"A kategorija ir aizliegtie ieroči. Civilpersonām tie pieejami tikai izņēmuma gadījumos (piem., kolekcionāriem ar īpašu atļauju).", s:"Ieroču aprites likums; ES Šaujamieroču direktīva", v:true },
+  { t:"atlaujas", q:"Kādi ieroči ietilpst E kategorijā?", o:["Gāzes ieroči un signālieroči","Pusautomātiskās pistoles","Automātiskās šautenes","Snaiperu šautenes"], a:0, e:"E kategorijā ir gāzes un signālieroči. Kopš 2019. gada arī gāzes pistoļu īpašniekiem jāsaņem atļauja.", s:"Ieroču aprites likums", v:true },
+  { t:"atlaujas", q:"No kāda vecuma fiziska persona var iegādāties, glabāt un nēsāt E kategorijas gāzes ieroci pašaizsardzībai?", o:["16 gadiem","18 gadiem","21 gada","25 gadiem"], a:1, e:"E kategorijas gāzes un signālieročiem pašaizsardzībai vecuma slieksnis ir 18 gadi.", s:"Ieroču aprites likums", v:true },
+  { t:"atlaujas", q:"No kāda vecuma fiziska persona var saņemt atļauju B kategorijas īsstobra šaujamierocim pašaizsardzībai?", o:["16 gadiem","18 gadiem","21 gada","30 gadiem"], a:2, e:"Pašaizsardzības šaujamierocim noteikts augstāks vecuma slieksnis nekā gāzes ierocim. Pārbaudi aktuālajā likuma redakcijā.", s:"Ieroču aprites likums", v:true },
+  { t:"atlaujas", q:"Kurš no šiem ir pamats atteikt ieroča atļauju?", o:["Persona dzīvo īrētā dzīvoklī","Persona ir sodīta par noziedzīgu nodarījumu, un sodāmība nav dzēsta vai noņemta","Personai nav autovadītāja apliecības","Persona strādā ārzemēs"], a:1, e:"Nedzēsta sodāmība par noziedzīgu nodarījumu ir viens no pamatiem atteikumam. Tāpat atsaka, ja ir medicīniskas kontrindikācijas.", s:"Ieroču aprites likums" },
+  { t:"atlaujas", q:"Kāds dokuments vajadzīgs, lai ar savu ieroci ceļotu uz citu ES valsti?", o:["Pietiek ar Latvijas nēsāšanas atļauju","Eiropas šaujamieroču pase (un, ja vajag, galamērķa valsts atļauja)","Pirkuma čeks","Nekas, ES ir Šengenas zona"], a:1, e:"Eiropas šaujamieroču pase ir galvenais dokuments ieroča pārvietošanai ES iekšienē. Daudzas valstis pieprasa arī iepriekšēju piekrišanu.", s:"ES Šaujamieroču direktīva; Ieroču aprites likums" },
+
+  // APRITE
+  { t:"aprite", q:"Pie kādas alkohola koncentrācijas asinīs aizliegts nēsāt vai lietot ieroci?", o:["Ja pārsniedz 0,5 promiles, kā arī narkotisko vai citu apreibinošu vielu ietekmē","Tikai virs 1,5 promilēm","Tikai virs 1,0 promiles","Alkohols nav ierobežots, ja persona jūtas labi"], a:0, e:"Treniņa ieteikums: ja nēsā ieroci, nelieto alkoholu vispār. Juridiskā robeža ir maza, un apreibinošu vielu ietekmē ieroci lietot aizliegts.", s:"Ieroču aprites likums; medību noteikumi", v:true },
+  { t:"aprite", q:"Kas jābūt līdzi, nēsājot ieroci?", o:["Ieroča nēsāšanas atļauja (un personu apliecinošs dokuments)","Nekas, dati ir policijas reģistrā","Tikai pirkuma čeks","Šautuves dalībnieka karte"], a:0, e:"Nēsājot ieroci, līdzi jābūt atļaujai, ko uzrāda pēc policijas pieprasījuma.", s:"Ieroču aprites likums", v:true },
+  { t:"aprite", q:"Kā mājās glabā šaujamieroci?", o:["Skapī starp drēbēm","Slēdzamā seifā vai metāla skapī, nepiederošām personām (arī bērniem) nepieejamā vietā","Zem gultas futrālī","Automašīnā, ja tā aizslēgta"], a:1, e:"Ierocis jāglabā tā, lai tam nevarētu piekļūt nepiederošas personas: slēdzamā seifā vai metāla skapī. Munīciju glabā atsevišķā slēdzamā nodalījumā vai seifā.", s:"Ieroču aprites likums; MK noteikumi par glabāšanu", v:true },
+  { t:"aprite", q:"Tev ir tikai glabāšanas atļauja. Kā pārvadāt ieroci uz šautuvi automašīnā?", o:["Pielādētu cimdu nodalījumā","Nepielādētu, iepakotu futrālī vai somā, munīciju atsevišķi","Pie jostas makstī","Ar ievietotu magazīnu, bet bez patronas patrontelpā"], a:1, e:"Pārvadājot ierocim jābūt nepielādētam un iepakotam tā, lai to nevarētu uzreiz izmantot.", s:"Ieroču aprites likums" },
+  { t:"aprite", q:"Tev nozagts ierocis. Ko dari?", o:["Gaidi, varbūt atradīsies","Nekavējoties ziņo Valsts policijai","Ziņo apdrošinātājam nedēļas laikā","Iegādājies jaunu un neko neziņo"], a:1, e:"Par ieroča vai atļaujas nozaudēšanu vai zādzību jāziņo policijai nekavējoties.", s:"Ieroču aprites likums" },
+  { t:"aprite", q:"Mežā atrodi vecu ieroci vai munīciju. Kā rīkoties?", o:["Paņemt līdzi un nodot policijā","Neaiztikt, atzīmēt vietu un zvanīt 112 vai 110","Mēģināt izlādēt","Iemest ūdenī"], a:1, e:"Atrastu ieroci vai munīciju neaiztiek: tā var būt nestabila vai saistīta ar noziegumu. Izsauc policiju.", s:"Valsts policijas ieteikumi" },
+  { t:"aprite", q:"Draugs, kuram nav ieroča atļaujas, palūdz uz nedēļu paturēt tavu pistoli. Ko atbildi?", o:["Drīkst, ja viņš to tur seifā","Nedrīkst: ieroci nedrīkst nodot personai bez atbilstošas atļaujas","Drīkst, ja uzraksti pilnvaru","Drīkst, ja tas ir ģimenes loceklis"], a:1, e:"Ieroci nedrīkst nodot glabāšanā vai lietošanā personai, kurai nav attiecīgas atļaujas. Atbildība gulstas arī uz īpašnieku.", s:"Ieroču aprites likums" },
+  { t:"aprite", q:"Vai drīkst nēsāt ieroci publiskā izklaides vai svētku pasākumā (koncerts, festivāls)?", o:["Drīkst, ja ir nēsāšanas atļauja","Nedrīkst: ieroču nēsāšana publiskos masu pasākumos ir aizliegta","Drīkst, ja ierocis ir slēpts","Drīkst tikai dienas laikā"], a:1, e:"Masu pasākumos ieroču nēsāšana ir aizliegta. Pirms došanās uz pasākumu ierocis jāatstāj glabāšanas vietā.", s:"Ieroču aprites likums; Publisku izklaides un svētku pasākumu drošības likums", v:true },
+  { t:"aprite", q:"Kā jārīkojas ar ieroci sabiedriskā vietā, kur to nēsā pašaizsardzībai?", o:["To drīkst izrādīt, lai atturētu potenciālos uzbrucējus","To nēsā drošā maksts, neizrāda un neizņem bez vajadzības","To tur rokā, ja jūties nedroši","To drīkst dot apskatīt draugiem"], a:1, e:"Ieroča demonstrēšana vai vicināšana var tikt vērtēta kā draudi vai huligānisms. Ierocis paliek makstī, līdz ir likumīgs pamats to lietot.", s:"Ieroču aprites likums; Krimināllikums" },
+  { t:"aprite", q:"Tu maini dzīvesvietu, kur glabā ieroci. Kas jādara?", o:["Neko","Paziņot Valsts policijai likumā noteiktajā termiņā un nodrošināt jaunajā vietā glabāšanas prasības","Tikai pārvest ieroci","Pārreģistrēt ieroci tirdzniecības vietā"], a:1, e:"Par glabāšanas vietas maiņu jāinformē policija noteiktajā termiņā. Jaunajā vietā jābūt seifam vai metāla skapim.", s:"Ieroču aprites likums", v:true },
+
+  // PAŠAIZSARDZĪBA
+  { t:"aizsardz", q:"Kurš Krimināllikuma pants regulē nepieciešamo aizstāvēšanos?", o:["29. pants","31. pants","117. pants","231. pants"], a:0, e:"KL 29. pants: nepieciešamā aizstāvēšanās. 31. pants: galējā nepieciešamība.", s:"Krimināllikums, 29. pants" },
+  { t:"aizsardz", q:"Kurš Krimināllikuma pants regulē galējo nepieciešamību?", o:["29. pants","31. pants","33. pants","125. pants"], a:1, e:"Galējā nepieciešamība (KL 31. p.) ir kaitējuma nodarīšana, lai novērstu lielāku briesmu, ja to nevar novērst citādi.", s:"Krimināllikums, 31. pants" },
+  { t:"aizsardz", q:"Kad ir tiesības uz nepieciešamo aizstāvēšanos?", o:["Ja uzbrukums ir uzsākts vai tieši draud, un aizstāvas pret uzbrucēju","Ja kāds aizvainojoši runā","Ja kāds pirms nedēļas draudēja","Ja uzbrucējs jau bēg"], a:0, e:"Uzbrukumam jābūt reālam un esošam: uzsāktam vai tieši draudošam. Kaitējumu nodara pašam uzbrucējam.", s:"Krimināllikums, 29. pants" },
+  { t:"aizsardz", q:"Kad tiek pārkāptas nepieciešamās aizstāvēšanās robežas?", o:["Ja aizstāvēšanās līdzekļi un veids acīmredzami neatbilst uzbrukuma raksturam un bīstamībai","Ja aizstāvas ar ieroci","Ja uzbrucējs ir nepilngadīgs","Ja aizstāvas svešā īpašumā"], a:0, e:"Robežas pārkāptas, ja aizstāvēšanās acīmredzami neatbilst uzbrukumam. Par to var iestāties kriminālatbildība.", s:"Krimināllikums, 29. pants" },
+  { t:"aizsardz", q:"Uzbrucējs pēc tava brīdinājuma pagriežas un bēg. Vai drīkst šaut viņam pakaļ?", o:["Jā, lai viņš neatgrieztos","Nē: uzbrukums ir beidzies, un nepieciešamās aizstāvēšanās pamats zudis","Jā, ja ir nēsāšanas atļauja","Jā, ja šauj kājās"], a:1, e:"Kad uzbrukums beidzies, aizstāvēšanās tiesības beidzas. Šāviens bēgošam cilvēkam ir uzbrukums, nevis aizstāvēšanās.", s:"Krimināllikums, 29. pants" },
+  { t:"aizsardz", q:"Ko dari uzreiz pēc tam, kad ieroci izmantoji pašaizsardzībai?", o:["Aizej no notikuma vietas","Novērs briesmas, izsauc policiju un neatliekamo palīdzību (112) un, ja droši, sniedz pirmo palīdzību","Notīri ieroci","Paziņo tikai, ja kāds ievainots"], a:1, e:"Par ieroča pielietošanu nekavējoties ziņo policijai. Cietušajam izsauc palīdzību. Notikuma vietā neko nemaina.", s:"Ieroču aprites likums; Krimināllikums" },
+  { t:"aizsardz", q:"Kas ir šķietamā aizstāvēšanās?", o:["Aizstāvēšanās pret uzbrukumu, kura patiesībā nav, bet persona apstākļu dēļ pamatoti to uzskatīja par reālu","Aizstāvēšanās ar rotaļu ieroci","Aizstāvēšanās, kas notiek tikai vārdiski","Aizstāvēšanās pēc uzbrukuma beigām"], a:0, e:"Atbildība atkarīga no tā, vai persona varēja un tai vajadzēja saprast, ka uzbrukuma nav. Tāpēc mērķis vienmēr jāidentificē.", s:"Krimināllikums; tiesu prakse" },
+  { t:"aizsardz", q:"Kas raksturo galējo nepieciešamību?", o:["Kaitējumu nodara, lai novērstu briesmas, kuras nevar novērst citādi, un nodarītais kaitējums ir mazāks par novērsto","Kaitējumu nodara uzbrucējam","Kaitējumu nodara atriebībā","Jebkura rīcība ārkārtas situācijā"], a:0, e:"Piemērs: izsit svešas mašīnas logu, lai izglābtu bērnu no karstuma. Nodarītajam kaitējumam jābūt mazākam par novērsto.", s:"Krimināllikums, 31. pants" },
+
+  // PIRMĀ PALĪDZĪBA
+  { t:"palidziba", q:"Kāds ir vienotais neatliekamās palīdzības tālruņa numurs Latvijā?", o:["112","911","101","03"], a:0, e:"112 ir vienotais ārkārtas numurs visā ES. Valsts policijai ir arī 110.", s:"Vienotais ārkārtas palīdzības numurs" },
+  { t:"palidziba", q:"Kas jāpārbauda vispirms, pirms sāc sniegt pirmo palīdzību šauta ievainojuma gadījumā?", o:["Cietušā dokumenti","Sava un apkārtējo drošība: vai draudi novērsti un ieroči nodrošināti","Ievainojuma kalibrs","Vai ir liecinieki"], a:1, e:"Glābējs, kurš pats tiek ievainots, nevienam nepalīdzēs. Vispirms pārliecinies, ka vieta ir droša.", s:"Pirmās palīdzības pamatprincipi" },
+  { t:"palidziba", q:"Spēcīga asiņošana no kājas brūces. Ko dara vispirms?", o:["Dod cietušajam padzerties","Spiež tieši uz brūces; ja asiņošana neapstājas, uzliek žņaugu virs brūces un pieraksta laiku","Pagaida ātro palīdzību, neko nedarot","Mazgā brūci ar ūdeni"], a:1, e:"Tiešs spiediens ir pirmais solis. Ja asiņošana no ekstremitātes ir dzīvībai bīstama, uzliek žņaugu 5–7 cm virs brūces un atzīmē uzlikšanas laiku.", s:"Pirmās palīdzības pamatprincipi" },
+  { t:"palidziba", q:"Šauta brūce krūškurvī, no tās dzird gaisa svilpšanu. Kā rīkoties?", o:["Atstāt brūci vaļā","Noklāt brūci ar gaisa necaurlaidīgu materiālu un izsaukt 112","Likt cietušo uz vēdera","Izņemt lodi"], a:1, e:"Gaisa sūkšana norāda uz pneimotoraksu. Brūci noklāj ar gaisa necaurlaidīgu pārsēju un uzrauga elpošanu.", s:"Pirmās palīdzības pamatprincipi" },
+  { t:"palidziba", q:"Ievainotais ir bezsamaņā, bet elpo normāli, mugurkaula traumu nav aizdomu. Kā viņu novieto?", o:["Uz muguras ar paceltu galvu","Stabilā sānu pozā","Sēdus","Uz vēdera"], a:1, e:"Stabilā sānu poza neļauj mēlei aizkrist un vemšanas masām nokļūt elpceļos. Elpošanu pārbauda regulāri.", s:"Pirmās palīdzības pamatprincipi" },
+
+  // SITUĀCIJAS
+  { t:"situacijas", scene:"Piektdienas vakars. Ar nēsāšanas atļauju un pistoli makstī ieej kafejnīcā. Draugi pasūta tev alu.", q:"Kā rīkojies?", o:["Iedzer vienu alu, tas nepārsniegs robežu","Atsakies no alkohola, kamēr nēsā ieroci","Iedod pistoli glabāt bārmenim","Izlādē pistoli un dzer"], a:1, e:"Nēsājot ieroci, alkoholu nelieto. Ja plāno dzert, ierocis iepriekš jāatstāj glabāšanas vietā mājās.", s:"Ieroču aprites likums" },
+  { t:"situacijas", scene:"Naktī mājās dzirdi troksni gaitenī. Pistole ir seifā guļamistabā. Gaitenī ir tumšs.", q:"Kura rīcība ir pareizākā?", o:["Iziet gaitenī un šaut uz kustību","Palikt drošā telpā, zvanīt 112, gatavot ieroci un nešaut, kamēr mērķis nav skaidri identificēts kā reāls uzbrucējs","Šaut caur durvīm brīdinājumam","Iet pārbaudīt bez gaismas"], a:1, e:"Tumsā kustība var būt ģimenes loceklis. Šauj tikai uz identificētu draudu. Labāk gaidīt policiju aiz slēgtām durvīm nekā pašam iet meklēt.", s:"Krimināllikums, 29. p.; drošības noteikumi" },
+  { t:"situacijas", scene:"Stāvvietā vīrietis 6 metru attālumā kliedz un lamājas uz tevi. Ieroča viņam nav, tuvoties viņš nemēģina.", q:"Ko dari?", o:["Izvelc pistoli, lai viņu nobiedētu","Neizvelc ieroci, attālinies un, ja vajag, zvani policijai","Šauj brīdinājuma šāvienu gaisā","Ej viņam klāt"], a:1, e:"Lamāšanās nav uzsākts vai tieši draudošs uzbrukums. Ieroča izvilkšana šādā situācijā pati var kļūt par pārkāpumu. Labākā aizsardzība ir aiziešana.", s:"Krimināllikums, 29. p." },
+  { t:"situacijas", scene:"Uzbrucējs ar nazi metas virsū. Tu izšauj, viņš nokrīt, nazis aizslīd prom.", q:"Kas tālāk?", o:["Šauj vēlreiz drošības pēc","Pārtrauc šaut, novēro situāciju, zvani 112 un, kad droši, sniedz pirmo palīdzību","Paņem nazi kā pierādījumu un aizej","Notīri ieroci"], a:1, e:"Kad draudi ir novērsti, šaušana jāpārtrauc. Izsauc policiju un palīdzību, nemaini notikuma vietu.", s:"Krimināllikums, 29. p.; Ieroču aprites likums" },
+  { t:"situacijas", scene:"Tev ir 8 gadus vecs bērns. Mājās ierocis glabājas slēdzamā seifā, atslēga karājas pie durvīm.", q:"Vai prasības izpildītas?", o:["Jā, ierocis ir seifā","Nē: piekļuvei seifam jābūt tikai atļaujas turētājam, atslēgu vai kodu glabā nepieejamu","Jā, ja bērnam aizliegts aiztikt","Jā, ja ierocis nav pielādēts"], a:1, e:"Seifs ir drošs tikai tad, ja tam nevar piekļūt nepiederošas personas. Atslēga pie durvīm ir tas pats, kas atvērts seifs.", s:"Ieroču aprites likums" },
+  { t:"situacijas", scene:"Šautuvē kaimiņš celiņā pagriežas ar pistoli rokā, lai tev kaut ko pajautātu. Stobrs vērsts uz tevi.", q:"Kas notiek pareizi organizētā šautuvē?", o:["Neko, viņš negrib šaut","Jebkurš drīkst saukt „Stop!”; šaušana tiek pārtraukta un ieroči novietoti drošā virzienā","Tu viņu pagrūd","Tu turpini šaut"], a:1, e:"Ikviens šautuvē var apturēt šaušanu, ja redz bīstamu rīcību. Stobrs vienmēr paliek vērsts uz mērķu pusi.", s:"Šautuves drošības noteikumi" },
+  { t:"situacijas", scene:"Brauc uz Lietuvu sacensībās ar savu sporta pistoli.", q:"Kas vajadzīgs?", o:["Nekas, ES nav robežkontroles","Eiropas šaujamieroču pase, kurā ierakstīts ierocis, un sacensību uzaicinājums vai galamērķa valsts prasītie dokumenti","Tikai Latvijas glabāšanas atļauja","Tikai pase"], a:1, e:"Ieroča pārvietošanai uz citu ES valsti vajag Eiropas šaujamieroču pasi. Sportistiem bieži pietiek ar pasi un uzaicinājumu, bet prasības jāpārbauda konkrētajai valstij.", s:"ES Šaujamieroču direktīva" },
+  { t:"situacijas", scene:"Policists uz ielas aptur tevi pārbaudei. Tev ir pistole zem jakas.", q:"Kā rīkojies?", o:["Pats izvelc pistoli, lai parādītu","Mierīgi pasaki, ka tev ir ierocis un atļauja, turi rokas redzamas un rīkojies pēc policista norādījumiem","Neko nesaki","Mēģini aiziet"], a:1, e:"Pateikt par ieroci uzreiz un turēt rokas redzamas ir pareizi. Ieroci neaiztiec bez policista norādījuma. Atļauju uzrādi pēc pieprasījuma.", s:"Valsts policijas ieteikumi" }
+];
+
+const STORE_KEY = "ierocu-trenazieris-v1";
+let store = { seen:{}, right:{}, mistakes:[] };
+try { const s = JSON.parse(localStorage.getItem(STORE_KEY)); if (s && s.seen) store = s; } catch(e) {}
+function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch(e) {} }
+Q.forEach((q,i)=> q.id = i);
+
+const app = document.getElementById("app");
+let session = null;
+let timerId = null;
+
+function shuffle(a){ a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function topicStats(t){
+  const qs = Q.filter(q=>q.t===t);
+  const mastered = qs.filter(q=>store.right[q.id]).length;
+  return { total: qs.length, mastered };
+}
+
+function renderHome(){
+  clearInterval(timerId);
+  document.getElementById("laneTag").textContent = "Celiņš 1";
+  const mist = store.mistakes.length;
+  const totalMastered = Q.filter(q=>store.right[q.id]).length;
+  app.innerHTML = `
+  <div style="display:flex;flex-direction:column;gap:24px">
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <div class="label">Izvēlies režīmu · apgūti ${totalMastered} no ${Q.length}</div>
+      <div class="modes">
+        <button class="mode primary" id="m-exam"><span class="label">Eksāmena simulācija</span><h3>30 jautājumi, 30 minūtes</h3><p>Visas tēmas, bez skaidrojumiem līdz beigām. Ieskaitīts no 80% pareizo.</p></button>
+        <button class="mode" id="m-train"><span class="label">Treniņš</span><h3>Visas tēmas jauktā secībā</h3><p>Pēc katras atbildes skaidrojums un avots.</p></button>
+        <button class="mode" id="m-sit"><span class="label">Situāciju spēle</span><h3>Ko tu darītu?</h3><p>${Q.filter(q=>q.t==="situacijas").length} reālistiskas situācijas par pašaizsardzību, nēsāšanu un drošību.</p></button>
+        <button class="mode" id="m-mist" ${mist? "" : "disabled"}><span class="label">Kļūdu labošana</span><h3>${mist ? mist + " jautājumi" : "Kļūdu nav"}</h3><p>Atkārto tikai tos jautājumus, kuros kļūdījies. Pareizi atbildēts jautājums pazūd no saraksta.</p></button>
+      </div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <h2>Tēmas</h2>
+      <div class="topics">
+        ${Object.entries(TOPICS).map(([k,t])=>{ const s=topicStats(k); return `
+          <button class="topic" data-topic="${k}">
+            <span class="name">${t.name}</span>
+            <span class="count">${s.mastered}/${s.total}</span>
+            <span class="bar"><i style="width:${Math.round(s.mastered/s.total*100)}%"></i></span>
+          </button>`;}).join("")}
+      </div>
+    </section>
+    <section class="notice"><b>Pirms eksāmena:</b> skaitļi, termiņi un vecuma sliekšņi ir apkopoti no likuma un var būt mainījušies ar 2026. gada grozījumiem. Jautājumi ar zīmi „pārbaudi likumā” ir jāsalīdzina ar likumi.lv. Ja vēlies sākt no jauna, <button id="reset" style="background:none;border:0;padding:0;text-decoration:underline;cursor:pointer;color:inherit">notīri progresu</button>.</section>
+  </div>`;
+  document.getElementById("m-exam").onclick = ()=> start("exam", shuffle(Q).slice(0,30));
+  document.getElementById("m-train").onclick = ()=> start("train", shuffle(Q));
+  document.getElementById("m-sit").onclick = ()=> start("train", shuffle(Q.filter(q=>q.t==="situacijas")), "Situāciju spēle");
+  const mb = document.getElementById("m-mist"); if (mist) mb.onclick = ()=> start("mist", shuffle(store.mistakes.map(i=>Q[i]).filter(Boolean)), "Kļūdu labošana");
+  app.querySelectorAll(".topic").forEach(b=> b.onclick = ()=> start("train", shuffle(Q.filter(q=>q.t===b.dataset.topic)), TOPICS[b.dataset.topic].name));
+  const r = document.getElementById("reset");
+  r.onclick = ()=>{
+    if (r.dataset.armed){ store = { seen:{}, right:{}, mistakes:[] }; save(); renderHome(); }
+    else { r.dataset.armed = "1"; r.textContent = "spied vēlreiz, lai apstiprinātu"; }
+  };
+}
+
+function start(mode, list, title){
+  // samaisa arī atbilžu variantus
+  const items = list.map(q=>{ const order = shuffle(q.o.map((_,i)=>i)); return { q, order }; });
+  session = { mode, items, idx:0, answers:[], hits:[], title: title || (mode==="exam" ? "Eksāmena simulācija" : "Treniņš"), startedAt: Date.now(), limit: mode==="exam" ? 30*60 : 0, streak:0, best:0 };
+  document.getElementById("laneTag").textContent = session.title;
+  renderQuestion();
+  if (mode === "exam") { clearInterval(timerId); timerId = setInterval(tick, 1000); }
+}
+
+function tick(){
+  const el = document.getElementById("timer"); if (!el || !session) return;
+  const left = session.limit - Math.floor((Date.now()-session.startedAt)/1000);
+  if (left <= 0) { clearInterval(timerId); finish(); return; }
+  el.textContent = String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");
+}
+
+function targetSVG(hits, size){
+  const rings = [1,0.8,0.6,0.4,0.2];
+  let s = `<svg viewBox="-110 -110 220 220" role="img" aria-label="Mērķis ar ${hits.filter(h=>h.ok).length} trāpījumiem">`;
+  rings.forEach((r,i)=>{ const dark = i>=2; s += `<circle r="${r*100}" fill="${dark ? "var(--ring)" : "var(--ring-fill)"}" stroke="${dark ? "var(--ring-fill)" : "var(--ring)"}" stroke-width="1.2"/>`; });
+  s += `<circle r="7" fill="none" stroke="var(--ring-fill)" stroke-width="1"/>`;
+  [6,7,8,9].forEach((n,i)=>{ const r = rings[i]*100 - 10; s += `<text x="0" y="${-r+3}" font-size="9" text-anchor="middle" fill="${i>=2 ? "var(--ring-fill)" : "var(--ring)"}" font-family="IBM Plex Mono, monospace">${n}</text>`; });
+  hits.forEach((h,i)=>{
+    const last = i === hits.length-1;
+    s += `<circle class="${last ? "hit" : ""}" cx="${h.x.toFixed(1)}" cy="${h.y.toFixed(1)}" r="5" fill="${h.ok ? "var(--accent)" : "var(--muted)"}" stroke="var(--paper)" stroke-width="1.5"/>`;
+  });
+  return s + `</svg>`;
+}
+
+function makeHit(ok){
+  const ang = Math.random()*Math.PI*2;
+  const r = ok ? Math.random()*36 : 62 + Math.random()*44;
+  return { ok, x: Math.cos(ang)*r, y: Math.sin(ang)*r };
+}
+
+function sidePanel(){
+  const correct = session.answers.filter(a=>a.ok).length;
+  const done = session.answers.length;
+  const pts = session.hits.reduce((s,h)=>{ const d=Math.hypot(h.x,h.y); return s + Math.max(0, 10-Math.floor(d/10)); },0);
+  return `<aside class="side">
+    <div class="targetbox">
+      ${targetSVG(session.hits)}
+      <div class="stats">
+        <div class="stat"><b>${pts}</b><span>Punkti</span></div>
+        <div class="stat"><b>${done ? Math.round(correct/done*100) : 0}%</b><span>Precizitāte</span></div>
+        <div class="stat"><b>${session.mode==="exam" ? `<span class="timer" id="timer">30:00</span>` : session.streak}</b><span>${session.mode==="exam" ? "Atlicis" : "Sērija"}</span></div>
+      </div>
+    </div>
+    <button class="btn ghost" id="quit">Pārtraukt un iziet</button>
+  </aside>`;
+}
+
+function renderQuestion(){
+  const it = session.items[session.idx];
+  const q = it.q;
+  const n = session.items.length;
+  app.innerHTML = `<div class="stage">
+    <section class="card" aria-live="polite">
+      <div class="qmeta"><span class="label">${TOPICS[q.t].short}</span><span class="label" style="font-variant-numeric:tabular-nums">${session.idx+1} / ${n}</span></div>
+      <div class="progress"><i style="width:${session.idx/n*100}%"></i></div>
+      ${q.scene ? `<p class="scene">${esc(q.scene)}</p>` : ""}
+      <p class="qtext">${esc(q.q)}</p>
+      <div class="opts">${it.order.map((oi,k)=>`<button class="opt" id="opt-${k}" data-oi="${oi}"><span class="k">${k+1}</span><span>${esc(q.o[oi])}</span></button>`).join("")}</div>
+      <div id="fb"></div>
+      <div class="actions"><span class="hint">Taustiņi 1–${it.order.length} izvēlei, Enter turpināt</span><button class="btn" id="next" hidden>${session.idx+1<n ? "Nākamais" : "Rezultāts"}</button></div>
+    </section>
+    ${sidePanel()}
+  </div>`;
+  app.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> answer(+b.dataset.oi));
+  document.getElementById("next").onclick = next;
+  document.getElementById("quit").onclick = ()=> session.answers.length ? finish() : (session = null, renderHome());
+  if (session.mode==="exam") tick();
+}
+
+function answer(oi){
+  const it = session.items[session.idx];
+  if (it.done) return;
+  it.done = true;
+  const q = it.q, ok = oi === q.a;
+  session.answers.push({ id:q.id, pick:oi, ok });
+  session.hits.push(makeHit(ok));
+  session.streak = ok ? session.streak+1 : 0;
+  store.seen[q.id] = (store.seen[q.id]||0)+1;
+  if (ok) { store.right[q.id] = true; store.mistakes = store.mistakes.filter(i=>i!==q.id); }
+  else { delete store.right[q.id]; if (!store.mistakes.includes(q.id)) store.mistakes.push(q.id); }
+  save();
+
+  const btns = app.querySelectorAll(".opt");
+  btns.forEach(b=>{ b.disabled = true; const v=+b.dataset.oi;
+    if (session.mode !== "exam") { if (v===q.a) b.classList.add("correct"); else if (v===oi) b.classList.add("wrong"); }
+    else if (v===oi) b.classList.add("picked");
+  });
+  if (session.mode !== "exam") {
+    document.getElementById("fb").innerHTML = `<div class="feedback ${ok?"ok":"bad"}">
+      <span class="verdict">${ok ? "Desmitnieks" : "Garām"}</span>
+      <p>${esc(q.e)}</p>
+      <p class="src">Avots: ${esc(q.s)}</p>
+      ${q.v ? `<span class="verify">Pārbaudi likumā: konkrētā norma var būt mainījusies</span>` : ""}
+    </div>`;
+  }
+  // atjauno mērķi
+  const side = app.querySelector(".side"); side.outerHTML = sidePanel();
+  document.getElementById("quit").onclick = finish;
+  if (session.mode==="exam") tick();
+  const nb = document.getElementById("next"); nb.hidden = false;
+  if (session.mode==="exam") next(); else nb.focus();
+}
+
+function next(){
+  if (!session) return;
+  if (session.idx+1 < session.items.length) { session.idx++; renderQuestion(); }
+  else finish();
+}
+
+function finish(){
+  clearInterval(timerId);
+  const total = session.mode==="exam" ? session.items.length : session.answers.length;
+  const correct = session.answers.filter(a=>a.ok).length;
+  const pct = total ? Math.round(correct/total*100) : 0;
+  const pass = pct >= 80;
+  const wrong = session.answers.filter(a=>!a.ok);
+  const unanswered = session.mode==="exam" ? session.items.length - session.answers.length : 0;
+  const m = Math.floor((Date.now()-session.startedAt)/60000);
+  app.innerHTML = `<div style="display:flex;flex-direction:column;gap:20px">
+    <section class="card">
+      <div class="result-head">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="label">${esc(session.title)} · ${m} min</span>
+          <div class="big">${correct}<span style="color:var(--muted)">/${total}</span></div>
+          <div><span class="stamp ${pass?"pass":"fail"}">${pass ? "Ieskaitīts" : "Vēl jātrenējas"}</span></div>
+          <p>${pct}% pareizo atbilžu.${unanswered ? ` Neatbildēti: ${unanswered}.` : ""} ${pass ? "Labs rezultāts. Pirms īstā eksāmena izej cauri arī situāciju uzdevumiem un pārbaudi atzīmētās normas likumā." : "Izmanto režīmu „Kļūdu labošana”, līdz saraksts ir tukšs, un tad mēģini simulāciju vēlreiz."}</p>
+        </div>
+        <div class="targetbox">${targetSVG(session.hits)}</div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="home">Uz sākumu</button>
+        ${store.mistakes.length ? `<button class="btn" id="fix">Labot kļūdas (${store.mistakes.length})</button>` : `<button class="btn" id="again">Vēlreiz</button>`}
+      </div>
+    </section>
+    ${wrong.length ? `<section class="card"><h2>Kļūdas</h2><div class="review">${wrong.map(w=>{ const q=Q[w.id]; return `<div class="rev">
+      <span class="q">${esc(q.q)}</span>
+      <span class="a yours">Tava atbilde: ${esc(q.o[w.pick])}</span>
+      <span class="a right">Pareizi: ${esc(q.o[q.a])}</span>
+      <span class="e">${esc(q.e)} <i>(${esc(q.s)})</i></span></div>`; }).join("")}</div></section>` : ""}
+  </div>`;
+  const mode = session.mode, title = session.title, ids = session.items.map(i=>i.q);
+  document.getElementById("home").onclick = renderHome;
+  const fx = document.getElementById("fix"); if (fx) fx.onclick = ()=> start("mist", shuffle(store.mistakes.map(i=>Q[i])), "Kļūdu labošana");
+  const ag = document.getElementById("again"); if (ag) ag.onclick = ()=> start(mode, mode==="exam" ? shuffle(Q).slice(0,30) : shuffle(ids), title);
+  session = null;
+}
+
+document.addEventListener("keydown", e=>{
+  if (!session) return;
+  const it = session.items[session.idx];
+  if (/^[1-9]$/.test(e.key) && !it.done) { const b = document.getElementById("opt-"+(+e.key-1)); if (b) b.click(); }
+  else if (e.key === "Enter" && it.done) { e.preventDefault(); next(); }
+});
+
+renderHome();
+</script>
