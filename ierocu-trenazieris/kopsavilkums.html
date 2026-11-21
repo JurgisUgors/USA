@@ -1,0 +1,289 @@
+<title>Ieroču eksāmena špikeris</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: blīva šautuves instrukciju lapa — kartītes režģī, lielie skaitļi kreisajā malā, pants mazā etiķetē */
+:root {
+  --bg: #e9ece6;
+  --paper: #f7f8f4;
+  --ink: #1d2320;
+  --muted: #5d6862;
+  --line: #c9cfc7;
+  --accent: #d9530f;
+  --accent-soft: #fbe6da;
+  --bad: #b3261e;
+  --bad-bg: #f8e3e1;
+  --ok: #2f7d4f;
+  --ok-bg: #e2f0e7;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816; --paper: #1d2220; --ink: #e7ebe6; --muted: #9aa59e; --line: #34403a;
+    --accent: #f07a3a; --accent-soft: #3a2518; --bad: #f08b84; --bad-bg: #3a1f1d; --ok: #6cc690; --ok-bg: #1d3327; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816; --paper: #1d2220; --ink: #e7ebe6; --muted: #9aa59e; --line: #34403a;
+  --accent: #f07a3a; --accent-soft: #3a2518; --bad: #f08b84; --bad-bg: #3a1f1d; --ok: #6cc690; --ok-bg: #1d3327; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2 { font-family: var(--font-display); margin: 0; text-transform: uppercase; letter-spacing: .02em; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1; font-weight: 700; }
+h2 { font-size: 1.3rem; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+p { margin: 0; }
+.label, .art { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.art { font-weight: 500; white-space: nowrap; }
+header { border-bottom: 3px solid var(--ink); padding-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+header .sub { color: var(--muted); max-width: 70ch; }
+
+.grid { columns: 3 340px; column-gap: 16px; }
+.card { break-inside: avoid; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.card.key { border: 2px solid var(--accent); }
+.card.danger { border: 2px solid var(--bad); }
+
+.facts { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.facts li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.num { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; text-align: right; }
+.facts small { color: var(--muted); font-size: .8rem; }
+
+ul.plain { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+ul.plain li::marker { color: var(--accent); }
+ol.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+ol.steps li::marker { font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 500; }
+td.k { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--accent); width: 34px; }
+
+.rule { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; letter-spacing: .04em; line-height: 1; display: flex; gap: 10px; flex-wrap: wrap; }
+.rule span { display: inline-flex; flex-direction: column; align-items: center; min-width: 54px; }
+.rule small { font-family: var(--font-body); font-size: .72rem; font-weight: 500; letter-spacing: 0; color: var(--muted); text-transform: none; text-align: center; }
+.no { background: var(--bad-bg); color: var(--bad); padding: 8px 10px; border-radius: 4px; font-size: .88rem; }
+.yes { background: var(--ok-bg); color: var(--ok); padding: 8px 10px; border-radius: 4px; font-size: .88rem; }
+.tag { display: inline-block; background: var(--accent-soft); color: var(--ink); font-size: .72rem; font-family: var(--font-mono); padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+footer { font-size: .82rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+footer a { color: inherit; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="label">Kopsavilkums atkārtošanai · Ieroču aprites likums, redakcija no 21.10.2026.</span>
+    <h1>Ieroču eksāmena špikeris</h1>
+    <p class="sub">Visi skaitļi, termiņi un aizliegumi vienā lapā. Pie katra bloka norādīts pants. Oranžie rāmji ir tas, ko eksāmenā prasa visbiežāk, sarkanie ir tas, kur kļūda maksā visdārgāk.</p>
+  </header>
+
+  <div class="grid">
+
+    <section class="card key">
+      <h2>Nēsāšana <span class="art">36. p.</span></h2>
+      <div class="rule">
+        <span>2<small>ieroči max</small></span>
+        <span>40<small>patronas katram</small></span>
+        <span>1<small>rezerves magazīna</small></span>
+        <span>0<small>patrontelpā</small></span>
+      </div>
+      <ul class="plain">
+        <li>Pistoli nēsā <b>bez patronas patrontelpā</b>. Revolverim: 1 rezerves cilindrs.</li>
+        <li>Makstī, lai nevar izkrist, <b>nepiesaista uzmanību</b> un nenonāk citu rokās.</li>
+        <li>Līdzi obligāti <b>nēsāšanas atļauja</b>.</li>
+        <li>Izvilkt drīkst tikai tad, ja ir pamats uzskatīt, ka iestāsies pielietošanas nosacījumi.</li>
+        <li>Viesnīcā vai citā īslaicīgas apmešanās vietā: <b>seifā vai metāla kastē</b> vai ieroču glabātavā.</li>
+        <li>Atklāti nēsāt aizliegts. <span class="art">13. p. 1. d. 8. p.</span></li>
+      </ul>
+    </section>
+
+    <section class="card danger">
+      <h2>Pielietošana <span class="art">65.–66. p.</span></h2>
+      <p><b>Pielietošana</b> = tēmēts šāviens (ne medībās, sacensībās, treniņā) vai šāviens ar sekām: nāve, kaitējums veselībai vai mantai, padarīts nekaitīgs dzīvnieks.</p>
+      <p class="label">Šaujamierocis kā galējais līdzeklis, lai:</p>
+      <ol class="steps">
+        <li>aizsargātu sevi vai citus no uzbrukuma, kas <b>reāli apdraud dzīvību vai veselību</b>;</li>
+        <li>novērstu vardarbīgu ieroča atņemšanu;</li>
+        <li>aizturētu personu, kas pārsteigta nozieguma brīdī un pretojas;</li>
+        <li>padarītu nekaitīgu dzīvnieku, kas apdraud dzīvību, veselību vai mantu.</li>
+      </ol>
+      <p class="yes"><b>Pirms tam:</b> brīdini vai izdari brīdinājuma šāvienu.</p>
+      <p><b>Bez brīdinājuma</b> drīkst, ja uzbrukums ir pēkšņs, uzbrucējs izmanto ieroci, bīstamu priekšmetu vai transportlīdzekli, vai aizturamais pretojas ar dzīvībai bīstamu priekšmetu.</p>
+      <p class="no"><b>Aizliegts</b>, ja var ciest citas personas, pret kurām ierocis nav vērsts. Nedrīkst pārkāpt nepieciešamās aizstāvēšanās robežas.</p>
+      <p class="label">Pēc pielietošanas:</p>
+      <ol class="steps">
+        <li>nekavējoties ziņo Valsts policijai;</li>
+        <li>saglabā notikuma vietu un paliec tajā;</li>
+        <li>sniedz pirmo palīdzību un izsauc neatliekamo palīdzību.</li>
+      </ol>
+      <p><b>Izmantošana</b> (ne pielietošana): izsaukt palīdzību, brīdināt, aizbaidīt dzīvniekus.</p>
+    </section>
+
+    <section class="card">
+      <h2>Vecums <span class="art">14. p.</span></h2>
+      <ul class="facts">
+        <li><span class="num">16</span><span>Gāzes baloniņš pašaizsardzībai</span></li>
+        <li><span class="num">18</span><span>E kat. gāzes ierocis, elektrošoka ierīce; pašaizsardzības gludstobra bise (tikai glabā un pārvadā)</span></li>
+        <li><span class="num">21</span><span>B kat. īsstobra pašaizsardzības pistole vai revolveris <small>· LV pilsonis vai ES/EEZ pilsonis ar pastāvīgās uzturēšanās atļauju</small></span></li>
+        <li><span class="num">21</span><span>Medību vītņstobra ierocis (ar mednieka apliecību)</span></li>
+      </ul>
+    </section>
+
+    <section class="card key">
+      <h2>Termiņi</h2>
+      <ul class="facts">
+        <li><span class="num">5 d.d.</span><span>Reģistrēt iegādātu, ievestu, mantotu vai dāvinātu ieroci <span class="art">35., 39. p.</span></span></li>
+        <li><span class="num">5 d.d.</span><span>Nodot ieroci un atļauju policijai pēc anulēšanas vai apturēšanas <span class="art">26. p.</span></span></li>
+        <li><span class="num">3 mēn.</span><span>Derīga iegādāšanās atļauja <span class="art">17. p.</span></span></li>
+        <li><span class="num">1–5 g.</span><span>Kārtējā veselības pārbaude <span class="art">27. p.</span></span></li>
+        <li><span class="num">1 g.</span><span>Pēc adm. soda (reibums, kārtības traucēšana, agresija) atļauju neizsniedz <span class="art">23. p. 7.</span></span></li>
+        <li><span class="num">Tūlīt</span><span>Ziņot par nozaudētu vai nozagtu ieroci tuvākajai VP iestādei <span class="art">89. p. 4. d.</span></span></li>
+        <li><span class="num">Tūlīt</span><span>Ziņot policijai par ieroča pielietošanu <span class="art">66. p. 5. d.</span></span></li>
+      </ul>
+    </section>
+
+    <section class="card danger">
+      <h2>Alkohols <span class="art">13., 71., 99. p.</span></h2>
+      <ul class="facts">
+        <li><span class="num">0,5‰</span><span>Virs tā aizliegts iegādāties, nēsāt, pārvadāt, izmantot, pielietot. Narkotiku vai citu vielu ietekmē — vienmēr.</span></li>
+        <li><span class="num">0‰</span><span>Šautuvē: aizliegts pat uzturēties jebkura reibuma ietekmē.</span></li>
+        <li><span class="num">200–400</span><span>naudas soda vienības + tiesību atņemšana uz 1–3 gadiem. Tāpat par <b>atteikšanos no pārbaudes</b>.</span></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Kategorijas <span class="art">5. p.</span></h2>
+      <div class="tbl-wrap"><table>
+        <tr><td class="k">A</td><td>Automātiskie, granātšāvēji, maskēti, pistoles ar &gt; 21 patronu bez pārlādēšanas, garstobra ar &gt; 11</td></tr>
+        <tr><td class="k">B</td><td>Īsstobra pistoles un revolveri, daļa pusautomātisko garstobra</td></tr>
+        <tr><td class="k">C</td><td>Atkārtotas darbības garstobra, viena šāviena garstobra, dezaktivētie</td></tr>
+        <tr><td class="k">D</td><td>Lielas enerģijas pneimatiskie (&gt; 12 J)</td></tr>
+        <tr><td class="k">E</td><td>Gāzes un signālieroči (izgatavoti pēc 16.01.2020., nav pārveidojami)</td></tr>
+        <tr><td class="k">F</td><td>Mazas enerģijas pneimatiskie (≤ 12 J), straikbols, peintbols, lāzertags</td></tr>
+      </table></div>
+      <p><span class="tag">2026</span> Gāzes ierocis, ko var pārveidot šaušanai ar lodi, ir šaujamierocis (A, B vai C). <span class="art">5. p. 7.¹ d.</span></p>
+    </section>
+
+    <section class="card">
+      <h2>Jēdzieni <span class="art">1. p.</span></h2>
+      <ul class="plain">
+        <li><b>Glabāšana</b>: turēšana atļautā vietā, ievērojot drošības prasības.</li>
+        <li><b>Pārvadāšana</b>: <b>nepielādēts</b>, <b>atsevišķi no munīcijas iesaiņots</b>, pielietot nav iespējams.</li>
+        <li><b>Nēsāšana</b>: <b>pielietošanai gatavs</b> ierocis līdzi ārpus glabāšanas vietas.</li>
+        <li><b>Pārsūtīšana</b>: pa pastu, ar bagāžu vai ar trešo personu.</li>
+        <li><b>Īsstobra</b>: stobrs ≤ 300 mm vai kopgarums ≤ 600 mm.</li>
+        <li><b>Kalibrs</b>: stobra iekšējais diametrs, šāviņa vai čaulas nosacītais izmērs.</li>
+        <li><b>Patrona</b>: šaujampulveris + kapsele + čaula, ar šāviņu vai bez tā.</li>
+        <li><b>Pusautomātiskais</b>: pats uzlādējas, viens šāviens katrai nolaišanai.</li>
+        <li><b>Gludstobra</b>: gludas vismaz 2/3 urbuma garuma.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Atļaujas <span class="art">16.–19. p.</span></h2>
+      <ul class="plain">
+        <li>Izsniedz <b>Valsts policija</b>.</li>
+        <li><b>Nēsāšanas atļauja</b>: tikai B kat. īsstobra pašaizsardzības ierocim. Dod arī tiesības glabāt, pārvadāt un pirkt rūpnieciski ražotu munīciju.</li>
+        <li><b>Glabāšanas atļauja</b>: glabāt atļaujā norādītajā adresē un pārvadāt, bet ne nēsāt.</li>
+        <li>Pašaizsardzības pistoles kalibrs: <b>≤ 11,43 mm</b>, ne traumatiskā. <span class="art">7. p.</span></li>
+        <li>Pirms pirmreizējas iegādes: <b>kvalifikācijas pārbaudījums</b> + <b>veselības pārbaude</b>. <span class="art">27.–28. p.</span></li>
+      </ul>
+      <ul class="facts">
+        <li><span class="num">10</span><span>šaujamieroči un D kat. ieroči vienai personai <span class="art">14. p. 12. d.</span></span></li>
+        <li><span class="num">15</span><span><span class="tag">2026</span> sportistam no 21 g., 12 mēn. klubā, vismaz 2. sporta klase</span></li>
+      </ul>
+      <p><span class="tag">2026</span> Atļaujas uz noteiktu laiku nomaina pret atļaujām <b>uz nenoteiktu laiku</b> pēc iesnieguma, bez valsts nodevas. <span class="art">Pārejas not. 24.</span></p>
+      <p><span class="tag">2026</span> Eiropas šaujamieroču apliecība braucienam uz ES valsti, jāuzrāda nekavējoties. <span class="art">89. p. 2.¹ d.</span></p>
+    </section>
+
+    <section class="card">
+      <h2>Atteikuma iemesli <span class="art">23. p.</span></h2>
+      <ul class="plain">
+        <li>Sodāmība par noziedzīgu nodarījumu, līdz tā dzēsta vai noņemta.</li>
+        <li>Apsūdzētais vai aizdomās turētais kriminālprocesā (atļauju aptur).</li>
+        <li>Psihiski traucējumi, atkarība, uzvedības traucējumi, fizisks trūkums.</li>
+        <li>Nav deklarētas dzīvesvietas Latvijā.</li>
+        <li>Adresē nav nodrošināti glabāšanas apstākļi.</li>
+        <li>Nepamatoti iegādes iemesli; pamatotas ziņas par ļaunprātīgu lietošanu; nelojalitāte.</li>
+        <li><span class="tag">2026</span> LV pilsonis, kas vienlaikus ir Krievijas vai Baltkrievijas pilsonis. Tiesības beidzas <b>01.12.2026.</b></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Glabāšana un nodošana <span class="art">35., 89. p.</span></h2>
+      <ul class="plain">
+        <li>Atļaujā norādītajā adresē: <b>slēgtā metāla seifā</b>, metāla skapī (kastē) vai rūpnieciski ražotā ieroču seifā.</li>
+        <li>Nepiederošie (arī bērni) nedrīkst piekļūt. Atslēga vai kods arī ir nepieejams.</li>
+        <li>Glabāšanā nodot drīkst tikai: juridiskai personai ar glabāšanas atļauju, licencētam ieroču komersantam vai VP.</li>
+        <li>VP drīkst pārbaudīt glabāšanas apstākļus <b>iepriekš nebrīdinot</b>. Atteikums → anulēšana.</li>
+        <li>Pēc policista pieprasījuma uzrāda ieroci, munīciju un atļauju.</li>
+      </ul>
+    </section>
+
+    <section class="card danger">
+      <h2>Aizliegts <span class="art">13. p.</span></h2>
+      <ul class="plain">
+        <li>Ar ieroci apmeklēt kultūras, svētku, piemiņas, izklaides, sporta, atpūtas pasākumus publiskā vietā (izņemot ar organizatora atļauju).</li>
+        <li>Demonstrēt ieroci publiskā vietā.</li>
+        <li>Nēsāt ieroci atklātā veidā.</li>
+        <li>Slāpētājs pašaizsardzības ierocim.</li>
+        <li>Traumatiskie šaujamieroči, salūtieroči fiziskām personām, elektrošoks ar izšaujamiem vadiem.</li>
+        <li>Pārveidot ieroci (mainīt kategoriju, apzāģēt stobru vai laidi, gāzes ieroci uz lodi).</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Krimināllikums</h2>
+      <ul class="facts">
+        <li><span class="num">29</span><span><b>Nepieciešamā aizstāvēšanās</b>: uzbrukums uzsākts vai tieši draud, kaitējumu nodara uzbrucējam. Robežas pārkāptas, ja aizstāvēšanās acīmredzami neatbilst uzbrukumam.</span></li>
+        <li><span class="num">31</span><span><b>Galējā nepieciešamība</b>: briesmas nevar novērst citādi, nodarītais kaitējums mazāks par novērsto.</span></li>
+      </ul>
+      <p class="no">Uzbrucējs bēg → uzbrukums beidzies → šaut nedrīkst. Lamāšanās nav uzbrukums.</p>
+    </section>
+
+    <section class="card">
+      <h2>Situāciju jautājumu secība</h2>
+      <ol class="steps">
+        <li>Uzbrukums ir <b>reāls un notiek tagad</b>?</li>
+        <li>Tas apdraud <b>dzīvību vai veselību</b>?</li>
+        <li>Vai var <b>ciest citi</b>?</li>
+        <li>Vajag <b>brīdinājumu</b>, vai uzbrukums ir pēkšņs?</li>
+        <li><b>Pēc tam</b>: policija, notikuma vieta, pirmā palīdzība.</li>
+      </ol>
+      <p>Ja 1. vai 2. nav skaidrs „jā”: neizvelc ieroci, attālinies, zvani 112.</p>
+    </section>
+
+    <section class="card">
+      <h2>Drošība un pirmā palīdzība</h2>
+      <ul class="plain">
+        <li>Katrs ierocis ir <b>pielādēts</b>, kamēr pats neesi pārbaudījis.</li>
+        <li>Stobrs tikai drošā virzienā. Pirksts ārpus mēlītes loka.</li>
+        <li>Zini, kas ir aiz mērķa.</li>
+        <li>Izlādēšana: <b>vispirms magazīna</b>, tad aizslēgs un patrontelpas pārbaude.</li>
+        <li>Klikšķis bez šāviena: stobrs drošā virzienā, <b>gaidi ≥ 30 s</b>.</li>
+        <li>Vājš šāviens: pārtrauc šaut, pārbaudi stobru.</li>
+      </ul>
+      <ul class="facts">
+        <li><span class="num">112</span><span>Vienotais ārkārtas numurs</span></li>
+        <li><span class="num">110</span><span>Valsts policija</span></li>
+      </ul>
+      <ul class="plain">
+        <li>Vispirms sava drošība. Asiņošana: tiešs spiediens, tad žņaugs virs brūces un laiks.</li>
+        <li>Krūškurvja brūce ar svilpšanu: gaisa necaurlaidīgs pārsējs. Bezsamaņa, elpo: stabilā sānu poza.</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <footer>
+    <p>Avots: Ieroču aprites likums, konsolidētā redakcija no 21.10.2026. līdz 30.11.2026., ieskaitot 24.09.2026. grozījumus. Krimināllikuma, drošības un pirmās palīdzības punkti nav salīdzināti ar oficiālu tekstu.</p>
+    <p>No 01.12.2026. mainās 16. panta 2. daļa (atļauju termiņi). Aktuālais teksts: <a href="https://likumi.lv/ta/id/305818-ierocu-aprites-likums" target="_blank" rel="noopener">likumi.lv</a>.</p>
+  </footer>
+</div>
