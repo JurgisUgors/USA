@@ -35,7 +35,8 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
 # Atslēgvārdi jaunumu filtrēšanai (meklē virsrakstā un tekstā, bez reģistra)
 NEWS_KEYWORDS = re.compile(
     r"izsol|atsavin|pārdo|pārdoš|izpārdo|daļu pārdo|akciju pārdo|"
-    r"kustam\w* mant|nekustam\w* īpašum|pirkuma piedāvājum",
+    r"kustam\w* mant|nekustam\w* īpašum|pirkuma piedāvājum|"
+    r"iznomā|nomas tiesīb|nomas izsol|nomas pieteikum|nodod nomā|telpu nom|zemes nom",
     re.I,
 )
 

@@ -5,8 +5,8 @@ Katru pirmdienu (GitHub Actions) pārbauda:
 | Avots | Kas tiek pārbaudīts |
 |---|---|
 | Possessor — izsoles | https://www.possessor.gov.lv/lv/auctions — katrs jauns izsoles objekts |
-| Possessor — jaunumi | https://www.possessor.gov.lv/jaunumi — tikai raksti, kuros minēta izsole / pārdošana / atsavināšana / nekustamais īpašums u.tml. |
-| LVĢMC Vides centrs — izsoles | https://videscentrs.lvgmc.lv/lapas/izsoles — nekustamā un kustamā manta (jauni sludinājumi un dokumenti) |
+| Possessor — jaunumi | https://www.possessor.gov.lv/jaunumi — tikai raksti, kuros minēta izsole / pārdošana / atsavināšana / noma / nekustamais īpašums u.tml. |
+| LVĢMC Vides centrs — izsoles | https://videscentrs.lvgmc.lv/lapas/izsoles — nekustamā un kustamā manta, gan pārdošana, gan noma (jauni sludinājumi un dokumenti) |
 | LVĢMC Vides centrs — jaunumi | https://videscentrs.lvgmc.lv/jaunumi — tikai ar tiem pašiem atslēgvārdiem |
 
 Ja parādās kas jauns, repozitorijā tiek izveidots **Issue** ar saitēm, un GitHub par to atsūta e-pastu.
