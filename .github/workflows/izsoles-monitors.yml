@@ -9,6 +9,8 @@ permissions:
   contents: write
   issues: write
 
+concurrency: izsoles-monitors
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -18,9 +20,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Instalēt atkarības
-        run: |
-          pip install -r izsoles-monitors/requirements.txt
-          python -m playwright install --with-deps chromium
+        run: pip install -r izsoles-monitors/requirements.txt
       - name: Pārbaudīt lapas
         run: python izsoles-monitors/monitor.py
       - name: Izveidot Issue, ja ir jaunumi
